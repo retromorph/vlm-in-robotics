@@ -15,9 +15,9 @@ dependencies:
   - pytorch-cuda=12.4
   - pip
   - pip:
-    - -e ./simpler_env/ManiSkill2_real2sim
-    - -e ./simpler_env
-    - -e ./openvla
+    - -e git+https://github.com/retromorph/vlm-in-robotics.git#subdirectory=simpler_env/ManiSkill2_real2sim
+    - -e git+https://github.com/retromorph/vlm-in-robotics.git#subdirectory=simpler_env
+    - -e git+https://github.com/retromorph/vlm-in-robotics.git#subdirectory=open_vla
     - packaging
     - ninja
     - flash-attn==2.6.1 --no-build-isolation
