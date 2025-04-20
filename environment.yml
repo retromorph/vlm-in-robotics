@@ -12,16 +12,13 @@ dependencies:
   - pytorch
   - torchvision
   - torchaudio
-  - cuda
   - pytorch-cuda=12.4
+  - cuda-toolkit=12.4
+  - ffmpeg
   - pip
   - pip:
     - -e ./simpler_env/ManiSkill2_real2sim
     - -e ./simpler_env
-    - tensorflow==2.15.0
-    - -r simpler_env/requirements_full_install.txt
-    - tensorflow[and-cuda]==2.15.1
     - -e ./openvla
     - packaging
     - ninja
-    - flash-attn==2.6.1

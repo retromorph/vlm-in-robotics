@@ -1,0 +1,11 @@
+python simpler_env/simpler_env/main_inference.py \
+  --env-name StackGreenCubeOnYellowCubeBakedTexInScene-v0 \
+  --policy-model rt1 \
+  --policy-setup widowx_bridge \
+  --ckpt-path checkpoints/rt_1_x_tf_trained_for_002272480_step \
+  --action-scale 1.0 \
+  --control-freq 5 \
+  --sim-freq 500 \
+  --max-episode-steps 200 \
+  --robot widowx \
+  --logging-dir logs/stack_cube
