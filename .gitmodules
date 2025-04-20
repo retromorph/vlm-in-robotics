@@ -1,0 +1,6 @@
+[submodule "simpler_env"]
+	path = simpler_env
+	url = https://github.com/simpler-env/SimplerEnv.git
+[submodule "openvla"]
+	path = openvla
+	url = https://github.com/openvla/openvla.git
