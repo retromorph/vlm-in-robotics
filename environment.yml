@@ -20,4 +20,4 @@ dependencies:
     - -e git+https://github.com/retromorph/vlm-in-robotics.git#subdirectory=open_vla&egg=openvla
     - packaging
     - ninja
-    - flash-attn==2.6.1 --no-build-isolation
+    - flash-attn==2.6.1
