@@ -6,6 +6,6 @@
 
 ## Updating SimplerEnv and OpenVLA
 
-```git submodule update --remote SimplerEnv```
+```git submodule update --remote simpler_env```
 
-```git submodule update --remote OpenVLA```
+```git submodule update --remote openvla```
