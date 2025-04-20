@@ -12,12 +12,16 @@ dependencies:
   - pytorch
   - torchvision
   - torchaudio
+  - cuda
   - pytorch-cuda=12.4
   - pip
   - pip:
-    - -e git+https://github.com/retromorph/vlm-in-robotics.git#subdirectory=simpler_env/ManiSkill2_real2sim&egg=mani_skill2_real2sim
-    - -e git+https://github.com/retromorph/vlm-in-robotics.git#subdirectory=simpler_env&egg=simpler_env
-    - -e git+https://github.com/retromorph/vlm-in-robotics.git#subdirectory=openvla&egg=openvla
+    - -e ./simpler_env/ManiSkill2_real2sim
+    - -e ./simpler_env
+    - tensorflow==2.15.0
+    - -r simpler_env/requirements_full_install.txt
+    - tensorflow[and-cuda]==2.15.1
+    - -e ./openvla
     - packaging
     - ninja
     - flash-attn==2.6.1
