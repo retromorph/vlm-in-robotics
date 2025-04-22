@@ -2,23 +2,14 @@ name: vlm-in-robotics
 channels:
   - defaults
   - conda-forge
-  - pytorch
-  - nvidia
 dependencies:
   - python=3.10
-  - numpy=1.24.4
   - compilers
   - cmake
-  - pytorch
-  - torchvision
-  - torchaudio
-  - pytorch-cuda=12.4
-  - cuda-toolkit=12.4
   - ffmpeg
   - pip
   - pip:
+    - numpy==1.24.4
     - -e ./simpler_env/ManiSkill2_real2sim
     - -e ./simpler_env
-    - -e ./openvla
-    - packaging
-    - ninja
+    - -r llserver/dev_requirements.txt

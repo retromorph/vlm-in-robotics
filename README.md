@@ -2,32 +2,21 @@
 
 ## Installation
 
-### Install ffmpeg
-```
-sudo apt update
-sudo apt install ffmpeg
-```
-
 ### Initialize SimplerEnv:
 
 ```git submodule update --init --recursive simpler_env```
-
-### Initialize OpenVLA:
-
-```git submodule update --init openvla```
 
 ### Download dependencies:
 
 ```conda env create -f environment.yml```
 
-then use [hack](https://github.com/simpler-env/SimplerEnv/issues/26) to fully install SimplerEnv and OpenVLA:
+then use [hack](https://github.com/simpler-env/SimplerEnv/issues/26) to fully install SimplerEnv:
 
 ```
 conda activate vlm-in-robotics
-pip install flash-attn==2.6.1
-pip install tensorflow==2.15.0
-pip install -r simpler_env/requirements_full_install.txt
-pip install tensorflow[and-cuda]==2.15.1
+pip install tensorflow==2.15.0 # Update me
+pip install -r requirements_full_install.txt
+pip install tensorflow[and-cuda]==2.15.1 # Update me
 ```
 
 ## Updating
@@ -36,30 +25,29 @@ pip install tensorflow[and-cuda]==2.15.1
 
 ```git submodule update --remote --recursive simpler_env```
 
-### Update OpenVLA:
-
-```git submodule update --remote openvla```
-
 ### Update dependencies:
 
 ```conda env update --file environment.yml --prune```
 
-then use [hack](https://github.com/simpler-env/SimplerEnv/issues/26) to fully update SimplerEnv and OpenVLA:
+then use [hack](https://github.com/simpler-env/SimplerEnv/issues/26) to fully update SimplerEnv:
 
 ```
 conda activate vlm-in-robotics
-pip install flash-attn==2.6.1
 pip install tensorflow==2.15.0 # Update me
 pip install -r simpler_env/requirements_full_install.txt
 pip install tensorflow[and-cuda]==2.15.1 # Update me
 ```
 
-## Test
+## Modules
 
-Install rt_1_x weights:
+### [Llserver](https://github.com/AmpiroMax/llserver)
+API gateway for LLMs
 
-```./scripts/install_rt_1_x_checkpoints.sh```
+### SimplerEnv
 
-Run test experiment:
+Test simpler env:
 
-```./experiments/000_stack_cube_rt1_x.sh```
+```bash
+python simpler_env/simple_inference_visual_matching_prepackaged_envs.py --policy rt1 \
+--ckpt-path ./checkpoints/rt_1_x_tf_trained_for_002272480_step  --task widowx_stack_cube  --logging-root ./results_simple_eval/  --n-trajs 10
+```
