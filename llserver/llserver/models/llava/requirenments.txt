@@ -1,0 +1,5 @@
+openai==1.58.1
+fastapi==0.115.2
+asyncio==3.4.3
+uvicorn==0.32.0
+llava[train] @ git+https://github.com/LLaVA-VL/LLaVA-NeXT.git@main#egg=llava

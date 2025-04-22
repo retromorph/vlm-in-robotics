@@ -1,0 +1,31 @@
+FROM pytorch/pytorch:2.0.0-cuda11.7-cudnn8-runtime
+
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y \
+    tree \
+    less \
+    vim \
+    curl \
+    wget \
+    build-essential \
+    python3-pip \
+    mesa-utils \
+    sudo \
+    && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+EXPOSE 8080
+
+RUN mkdir -p ~/${PROJECT_NAME}
+WORKDIR ~/${PROJECT_NAME}
+COPY models/llama2/requirements.txt .
+RUN pip install -r requirements.txt
+
+COPY infrastructure infrastructure/
+COPY models/llama2/ .
+
+ENTRYPOINT ["python3","-m", "server"]
