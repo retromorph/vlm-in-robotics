@@ -15,8 +15,9 @@ then use [hack](https://github.com/simpler-env/SimplerEnv/issues/26) to fully in
 ```
 conda activate vlm-in-robotics
 pip install tensorflow==2.15.0 # Update me
-pip install -r requirements_full_install.txt
+pip install -r simpler_env/requirements_full_install.txt
 pip install tensorflow[and-cuda]==2.15.1 # Update me
+conda install ffmpeg
 ```
 
 ## Updating
@@ -36,6 +37,7 @@ conda activate vlm-in-robotics
 pip install tensorflow==2.15.0 # Update me
 pip install -r simpler_env/requirements_full_install.txt
 pip install tensorflow[and-cuda]==2.15.1 # Update me
+conda install ffmpeg
 ```
 
 ## Modules
@@ -48,6 +50,21 @@ API gateway for LLMs
 Test simpler env:
 
 ```bash
+cd simpler_env
+mkdir checkpoints
+pip install gsutil
+gsutil -m cp -r gs://gdm-robotics-open-x-embodiment/open_x_embodiment_and_rt_x_oss/rt_1_x_tf_trained_for_002272480_step.zip .
+unzip rt_1_x_tf_trained_for_002272480_step.zip
+mv rt_1_x_tf_trained_for_002272480_step checkpoints
+rm rt_1_x_tf_trained_for_002272480_step.zip
 python simpler_env/simple_inference_visual_matching_prepackaged_envs.py --policy rt1 \
 --ckpt-path ./checkpoints/rt_1_x_tf_trained_for_002272480_step  --task widowx_stack_cube  --logging-root ./results_simple_eval/  --n-trajs 10
 ```
+
+Result will be in results_simple_eval
+
+## ...
+cd llserver
+PYTHONPATH=$PYTHONPATH:. uvicorn llserver.server.uniserver:app --reload --host 0.0.0.0 --port 8000
+
+docker build -t llmserver.cogact llserver/models/cogact
