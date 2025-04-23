@@ -6,6 +6,8 @@
 
 ```git submodule update --init --recursive simpler_env```
 
+```git submodule update --init --recursive simpler_env_vla```
+
 ### Download dependencies:
 
 ```conda env create -f environment.yml```
