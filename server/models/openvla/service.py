@@ -1,4 +1,5 @@
 import bentoml
+from bentoml import Context
 from bentoml.io import JSON, NumpyNdarray
 import numpy as np
 
@@ -13,7 +14,7 @@ class OpenVLAService:
         self.model = OpenVLAInference()
 
     # ---------- API 1: update model hyper-params at runtime -----------------
-    @bentoml.api(input=JSON(), output=JSON())
+    @bentoml.api
     def update_inference_parameters(self, params: dict) -> dict:
         """
         Example body: {"horizon": 3, "action_scale": 0.8}
@@ -24,20 +25,28 @@ class OpenVLAService:
         return {"status": "ok", "new_params": params}
 
     # ---------- API 2: reset episode / task --------------------------------
-    @bentoml.api(input=JSON(), output=JSON())
+    @bentoml.api
     def reset(self, body: dict) -> dict:
         self.model.reset(body.get("task_description", ""))
         return {"status": "reset"}
 
     # ---------- API 3: step -------------------------------------------------
-    @bentoml.api(input=NumpyNdarray(dtype="uint8", shape=(-1,-1,3)), output=JSON())
-    def step(self, image: np.ndarray, task: bentoml.Context) -> dict:   # context gives headers/query
-        raw, action = self.model.step(image, task.headers.get("Task-Description"))
+    @bentoml.api
+    def step(self, image: np.ndarray, ctx: Context) -> dict:
+        """
+        Note: renamed `task` → `ctx` and imported `Context` to access headers properly.
+        """
+        # Use ctx.request.headers to pull through your custom header
+        raw, action = self.model.step(
+            image, ctx.request.headers.get("Task-Description")
+        )
         return {"raw_action": raw, "action": action}
 
     # ---------- API 4: visualize one epoch ---------------------------------
-    @bentoml.api(input=JSON(), output=JSON())
+    @bentoml.api
     def visualize_epoch(self, body: dict) -> dict:
         save_path = "/tmp/epoch.png"
-        self.model.visualize_epoch(body["predicted_raw_actions"], body["images"], save_path)
+        self.model.visualize_epoch(
+            body["predicted_raw_actions"], body["images"], save_path
+        )
         return {"plot": save_path}

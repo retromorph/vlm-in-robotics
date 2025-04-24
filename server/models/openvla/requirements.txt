@@ -4,8 +4,9 @@ torch>=2.2.0
 torchvision>=0.16.0
 transformers==4.40.1
 transforms3d
-bentoml
 matplotlib
 numpy
 pillow
 opencv-python-headless
+bentoml
+accelerate
