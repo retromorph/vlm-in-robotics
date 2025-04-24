@@ -1,34 +1,20 @@
-# leverage common CUDA + python base to speed up multi-build
-FROM pytorch/pytorch:2.0.0-cuda11.7-cudnn8-runtime
+FROM python:3.10-slim
+WORKDIR /app
 
-ENV DEBIAN_FRONTEND noninteractive
-
-RUN apt-get update && \
-    apt-get upgrade -y && \
-    apt-get install -y \
-    tree \
-    less \
-    vim \
-    curl \
-    wget \
+# Install system deps for OpenVLA (e.g., ffmpeg, libgl1)
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    python3-pip \
-    mesa-utils \
-    sudo \
-    && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    git \
+    libgl1 \
+    && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /workspace
+# Copy requirements and install
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
-# --- copy only what we need to leverage Docker cache -------------
-COPY app/ ./app/
+# Copy service code
+COPY openvla_service.py ./
+COPY common/ ./common/
 
-# --- build the Bento -------------------------------------------------------
-RUN bentoml build -f bentofile.yaml
-
-# ---- final runtime image (tiny) ------------------------------------------
-FROM pytorch/pytorch:2.0.0-cuda11.7-cudnn8-runtime
-
-COPY --from=0 /workspace/bentos/*.bento /bentos/
-CMD ["bentoml", "serve", "/bentos/*.bento", "--production", "--workers", "1"]
+# BentoML serve command
+CMD ["bentoml", "serve", "openvla_service:svc", "--port", "${BENTOML_PORT}", "--workers", "4"]

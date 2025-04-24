@@ -2,23 +2,9 @@ version: "3.9"
 
 services:
   openvla:
-    build:
-      context: ./services/openvla
-      dockerfile: Dockerfile
-    container_name: openvla
-    restart: unless-stopped
-    environment:
-      - NVIDIA_VISIBLE_DEVICES=all
-      - NVIDIA_DRIVER_CAPABILITIES=utility,compute
-    deploy:                           # swarm/k8s hints, ignored by plain compose
-      resources:
-        reservations:
-          devices:
-            - capabilities: [gpu]
+    build: ./services/openvla
     ports:
-      - "7001:3000"                   # BentoML default HTTP port
-    networks: [vla-net]
-
-networks:
-  vla-net:
-    driver: bridge
+      - "5000:3000"
+    environment:
+      - BENTOML_PORT=3000
+    restart: always
