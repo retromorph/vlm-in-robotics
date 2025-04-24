@@ -2,7 +2,7 @@ import bentoml
 from bentoml.io import JSON, NumpyNdarray
 import numpy as np
 
-from server.services.openvla.openvla_inference import OpenVLAInference
+from openvla_inference import OpenVLAInference
 
 # ---- lazy model init (fork-friendly) --------------------------------------
 @bentoml.service(
