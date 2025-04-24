@@ -76,4 +76,3 @@ CMD ["/bin/bash"]
 # 3️⃣  Export aliases
 ############################
 FROM runtime AS vla-serving-base
-FROM runtime AS vla-serving-base:runtime
