@@ -23,7 +23,6 @@ WORKDIR /workspace
 
 # --- copy only what we need to leverage Docker cache -------------
 COPY app/ ./app/
-COPY openvla_inference.py ./app/
 
 # --- build the Bento -------------------------------------------------------
 RUN bentoml build -f bentofile.yaml
