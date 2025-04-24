@@ -15,7 +15,7 @@ then use [hack](https://github.com/simpler-env/SimplerEnv/issues/26) to fully in
 ```
 conda activate vlm-in-robotics
 pip install tensorflow==2.15.0 # Update me
-pip install -r simpler_env_vla/requirements_full_install.txt
+pip install -r simpler_env/requirements_full_install.txt
 pip install tensorflow[and-cuda]==2.15.1 # Update me
 conda install ffmpeg
 ```

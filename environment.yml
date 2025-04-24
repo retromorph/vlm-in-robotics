@@ -10,5 +10,6 @@ dependencies:
   - pip
   - pip:
     - numpy==1.24.4
+    - opencv-python-headless
     - -e ./simpler_env/ManiSkill2_real2sim
     - -e ./simpler_env
