@@ -29,4 +29,4 @@ COPY . .
 
 EXPOSE 3000
 
-CMD ["bentoml", "serve", "openvla_service:svc", "--port", "${BENTOML_PORT}", "--workers", "4"]
+CMD ["bentoml", "serve"]
