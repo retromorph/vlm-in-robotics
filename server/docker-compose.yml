@@ -1,0 +1,23 @@
+version: "3.9"
+
+services:
+  openvla:
+    build: ./services/openvla
+    image: vla/openvla:latest        # `docker compose build` creates this
+    container_name: openvla
+    restart: unless-stopped
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=utility,compute
+    deploy:                           # swarm/k8s hints, ignored by plain compose
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    ports:
+      - "7001:3000"                   # BentoML default HTTP port
+    networks: [vla-net]
+
+networks:
+  vla-net:
+    driver: bridge
