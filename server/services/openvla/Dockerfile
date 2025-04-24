@@ -29,7 +29,7 @@ COPY openvla_inference.py ./app/
 RUN bentoml build -f bentofile.yaml
 
 # ---- final runtime image (tiny) ------------------------------------------
-FROM vla-serving-base:runtime
+FROM pytorch/pytorch:2.0.0-cuda11.7-cudnn8-runtime
 
 COPY --from=0 /workspace/bentos/*.bento /bentos/
 CMD ["bentoml", "serve", "/bentos/*.bento", "--production", "--workers", "1"]
