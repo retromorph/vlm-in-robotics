@@ -1,5 +1,5 @@
 # leverage common CUDA + python base to speed up multi-build
-FROM vla-serving-base:latest
+FROM vla-base:latest
 
 WORKDIR /workspace
 
