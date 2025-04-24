@@ -2,8 +2,9 @@ version: "3.9"
 
 services:
   openvla:
-    build: ./services/openvla
-    image: vla/openvla:latest        # `docker compose build` creates this
+    build:
+      context: ./services/openvla
+      dockerfile: Dockerfile
     container_name: openvla
     restart: unless-stopped
     environment:
