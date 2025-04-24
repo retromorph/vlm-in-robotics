@@ -1,32 +1,60 @@
+"""
+cogact_policy.py
+
+"""
+from collections import deque
 from typing import Optional, Sequence
 import os
-import matplotlib.pyplot as plt
-import numpy as np
-from transforms3d.euler import euler2axangle
-from transformers import AutoModelForVision2Seq, AutoProcessor
 from PIL import Image
 import torch
 import cv2 as cv
+import matplotlib.pyplot as plt
+import numpy as np
 
-class OpenVLAInference:
+from transforms3d.euler import euler2axangle
+from transformers import AutoModelForVision2Seq, AutoProcessor
+
+
+from vla import load_vla
+from sim_cogact.adaptive_ensemble import AdaptiveEnsembler
+
+class CogACTInference:
     def __init__(
         self,
-        saved_model_path: str = "openvla/openvla-7b",
+        saved_model_path: str = 'CogACT/CogACT-Base',
         unnorm_key: Optional[str] = None,
         policy_setup: str = "widowx_bridge",
-        horizon: int = 1,
-        pred_action_horizon: int = 1,
-        exec_horizon: int = 1,
+        horizon: int = 0,
+        action_ensemble_horizon: Optional[int] = None,
         image_size: list[int] = [224, 224],
+        future_action_window_size: int = 15,
+        action_dim: int = 7,
+        action_model_type: str = "DiT-L",
         action_scale: float = 1.0,
+        cfg_scale: float = 1.5,
+        use_ddim: bool = True,
+        num_ddim_steps: int = 10,
+        use_bf16: bool = True,
+        action_ensemble = True,
+        adaptive_ensemble_alpha = 0.1,
     ) -> None:
         os.environ["TOKENIZERS_PARALLELISM"] = "false"
         if policy_setup == "widowx_bridge":
             unnorm_key = "bridge_orig" if unnorm_key is None else unnorm_key
+            action_ensemble = action_ensemble
+            adaptive_ensemble_alpha = adaptive_ensemble_alpha
+            if action_ensemble_horizon is None:
+                # Set 7 for widowx_bridge to fix the window size of motion scale between each frame. see appendix in our paper for details
+                action_ensemble_horizon = 7
             self.sticky_gripper_num_repeat = 1
         elif policy_setup == "google_robot":
             unnorm_key = "fractal20220817_data" if unnorm_key is None else unnorm_key
-            self.sticky_gripper_num_repeat = 15
+            action_ensemble = action_ensemble
+            adaptive_ensemble_alpha = adaptive_ensemble_alpha
+            if action_ensemble_horizon is None:
+                # Set 2 for google_robot to fix the window size of motion scale between each frame. see appendix in our paper for details
+                action_ensemble_horizon = 2
+            self.sticky_gripper_num_repeat = 10
         else:
             raise NotImplementedError(
                 f"Policy setup {policy_setup} not supported for octo models. The other datasets can be found in the huggingface config.json file."
@@ -35,32 +63,51 @@ class OpenVLAInference:
         self.unnorm_key = unnorm_key
 
         print(f"*** policy_setup: {policy_setup}, unnorm_key: {unnorm_key} ***")
-        self.processor = AutoProcessor.from_pretrained(saved_model_path, trust_remote_code=True)
-        self.vla = AutoModelForVision2Seq.from_pretrained(
-            "openvla/openvla-7b",
-            attn_implementation="flash_attention_2",  # [Optional] Requires `flash_attn`
-            torch_dtype=torch.bfloat16,
-            low_cpu_mem_usage=True,
-            trust_remote_code=True,
-        ).cuda()
+        self.use_ddim = use_ddim
+        self.num_ddim_steps = num_ddim_steps
+        self.vla = load_vla(
+          saved_model_path,                       # choose from ['CogACT/CogACT-Small', 'CogACT/CogACT-Base', 'CogACT/CogACT-Large'] or the local path
+          hf_token="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",
+          load_for_training=False, 
+          action_model_type=action_model_type,              # choose from ['DiT-Small', 'DiT-Base', 'DiT-Large'] to match the model weight
+          future_action_window_size=future_action_window_size,
+          action_dim=action_dim,
+        )
+        print("Successfully downloaded")
+
+        if use_bf16:
+            self.vla.vlm = self.vla.vlm.to(torch.bfloat16)
+        self.vla = self.vla.to("cuda").eval()
+        self.cfg_scale = cfg_scale
 
         self.image_size = image_size
         self.action_scale = action_scale
         self.horizon = horizon
-        self.pred_action_horizon = pred_action_horizon
-        self.exec_horizon = exec_horizon
-
+        self.action_ensemble = action_ensemble
+        self.adaptive_ensemble_alpha = adaptive_ensemble_alpha
+        self.action_ensemble_horizon = action_ensemble_horizon
         self.sticky_action_is_on = False
         self.gripper_action_repeat = 0
         self.sticky_gripper_action = 0.0
         self.previous_gripper_action = None
 
-        self.task = None
         self.task_description = None
+        self.image_history = deque(maxlen=self.horizon)
+        if self.action_ensemble:
+            self.action_ensembler = AdaptiveEnsembler(self.action_ensemble_horizon, self.adaptive_ensemble_alpha)
+        else:
+            self.action_ensembler = None
         self.num_image_history = 0
+
+    def _add_image_to_history(self, image: np.ndarray) -> None:
+        self.image_history.append(image)
+        self.num_image_history = min(self.num_image_history + 1, self.horizon)
 
     def reset(self, task_description: str) -> None:
         self.task_description = task_description
+        self.image_history.clear()
+        if self.action_ensemble:
+            self.action_ensembler.reset()
         self.num_image_history = 0
 
         self.sticky_action_is_on = False
@@ -88,16 +135,19 @@ class OpenVLAInference:
                 self.reset(task_description)
 
         assert image.dtype == np.uint8
-        image = self._resize_image(image)
-
+        self._add_image_to_history(self._resize_image(image))
         image: Image.Image = Image.fromarray(image)
-        prompt = task_description
+        raw_actions, normalized_actions = self.vla.predict_action(image=image, 
+                                                                instruction=self.task_description,
+                                                                unnorm_key=self.unnorm_key,
+                                                                do_sample=False, 
+                                                                cfg_scale=self.cfg_scale,
+                                                                use_ddim=self.use_ddim,
+                                                                num_ddim_steps=self.num_ddim_steps,
+                                                                )
 
-        # predict action (7-dof; un-normalize for bridgev2)
-        inputs = self.processor(prompt, image).to("cuda:0", dtype=torch.bfloat16)
-        raw_actions = self.vla.predict_action(**inputs, unnorm_key=self.unnorm_key, do_sample=False)[None]
-        # print(f"*** raw actions {raw_actions} ***")
-
+        if self.action_ensemble:
+            raw_actions = self.action_ensembler.ensemble_action(raw_actions)[None]
         raw_action = {
             "world_vector": np.array(raw_actions[0, :3]),
             "rotation_delta": np.array(raw_actions[0, 3:6]),
@@ -108,22 +158,27 @@ class OpenVLAInference:
         action = {}
         action["world_vector"] = raw_action["world_vector"] * self.action_scale
         action_rotation_delta = np.asarray(raw_action["rotation_delta"], dtype=np.float64)
+
         roll, pitch, yaw = action_rotation_delta
-        action_rotation_ax, action_rotation_angle = euler2axangle(roll, pitch, yaw)
-        action_rotation_axangle = action_rotation_ax * action_rotation_angle
+        axes, angles = euler2axangle(roll, pitch, yaw)
+        action_rotation_axangle = axes * angles
         action["rot_axangle"] = action_rotation_axangle * self.action_scale
 
         if self.policy_setup == "google_robot":
+            action["gripper"] = 0
             current_gripper_action = raw_action["open_gripper"]
             if self.previous_gripper_action is None:
                 relative_gripper_action = np.array([0])
+                self.previous_gripper_action = current_gripper_action
             else:
                 relative_gripper_action = self.previous_gripper_action - current_gripper_action
-            self.previous_gripper_action = current_gripper_action
+            # fix a bug in the SIMPLER code here
+            # self.previous_gripper_action = current_gripper_action
 
             if np.abs(relative_gripper_action) > 0.5 and (not self.sticky_action_is_on):
                 self.sticky_action_is_on = True
                 self.sticky_gripper_action = relative_gripper_action
+                self.previous_gripper_action = current_gripper_action
 
             if self.sticky_action_is_on:
                 self.gripper_action_repeat += 1
@@ -138,9 +193,8 @@ class OpenVLAInference:
 
         elif self.policy_setup == "widowx_bridge":
             action["gripper"] = 2.0 * (raw_action["open_gripper"] > 0.5) - 1.0
-
+        
         action["terminate_episode"] = np.array([0.0])
-
         return raw_action, action
 
     def _resize_image(self, image: np.ndarray) -> np.ndarray:
@@ -178,3 +232,5 @@ class OpenVLAInference:
         axs["image"].set_xlabel("Time in one episode (subsampled)")
         plt.legend()
         plt.savefig(save_path)
+
+inference = CogACTInference(policy_setup='google_robot')

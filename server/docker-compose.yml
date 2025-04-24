@@ -1,14 +1,60 @@
-version: "3.9"
-
 services:
-  openvla:
+  # openvla:
+  #   build:
+  #     context: ./models/openvla
+  #     dockerfile: Dockerfile
+  #   image: openvla:latest
+  #   container_name: openvla
+  #   environment:
+  #     - HF_HOME=/cache/huggingface
+  #   ports:
+  #     - "8001:8000"
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./models/openvla:/app
+  #     - /cache/huggingface:/cache/huggingface
+  #   deploy:                           # swarm/k8s hints, ignored by plain compose
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - capabilities: [gpu]
+
+  # ecot:
+  #   build:
+  #     context: ./models/ecot
+  #     dockerfile: Dockerfile
+  #   image: ecot:latest
+  #   container_name: ecot
+  #   environment:
+  #     - HF_HOME=/cache/huggingface
+  #   ports:
+  #     - "8002:8000"
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./models/ecot:/app
+  #     - /cache/huggingface:/cache/huggingface
+  #   deploy:                           # swarm/k8s hints, ignored by plain compose
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - capabilities: [gpu]
+
+  cogact:
     build:
-      context: ./models/openvla
+      context: ./models/cogact
       dockerfile: Dockerfile
-    image: openvla:latest
-    container_name: openvla
+    image: cogact:latest
+    container_name: cogact
+    environment:
+      - HF_HOME=/cache/huggingface
     ports:
-      - "8001:3000"
+      - "8003:8000"
     restart: unless-stopped
     volumes:
-      - ./models/openvla:/app
+      - ./models/cogact:/app
+      - /cache/huggingface:/cache/huggingface
+    deploy:                           # swarm/k8s hints, ignored by plain compose
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
