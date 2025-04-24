@@ -1,0 +1,6 @@
+torch                # make sure this matches your CUDA / CPU setup
+transformers         # for AutoProcessor & AutoModelForVision2Seq
+transforms3d         # for euler2axangle
+opencv-python-headless
+Pillow
+bentoml>=1.0.0       # or the latest v1.x series

@@ -2,7 +2,6 @@
 	path = simpler_env
 	url = https://github.com/simpler-env/SimplerEnv.git
 	fetchRecurseSubmodules = true
-[submodule "simpler_env_vla"]
-	path = simpler_env_vla
+[submodule "simpler_env_openvla"]
+	path = simpler_env_openvla
 	url = https://github.com/DelinQu/SimplerEnv-OpenVLA.git
-    fetchRecurseSubmodules = true

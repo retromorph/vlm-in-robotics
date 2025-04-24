@@ -4,5 +4,6 @@
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/simpler_env" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/simpler_env/ManiSkill2_real2sim" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/simpler_env_vla" vcs="Git" />
   </component>
 </project>

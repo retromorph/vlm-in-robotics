@@ -1,0 +1,41 @@
+FROM pytorch/pytorch:2.0.0-cuda11.7-cudnn8-runtime
+
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y \
+    tree \
+    less \
+    vim \
+    curl \
+    wget \
+    build-essential \
+    python3-pip \
+    mesa-utils \
+    sudo \
+    && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+EXPOSE 8080
+
+WORKDIR /llserver
+
+# Copy and install requirements first to leverage Docker cache
+COPY dev_requirements.txt .
+COPY llserver/models/openvla/requirements.txt ./llserver/models/openvla/
+RUN pip install -r dev_requirements.txt && \
+    pip install -r llserver/models/openvla/requirements.txt
+
+# Copy the rest of the code after installing dependencies
+COPY llserver/ llserver/
+COPY setup.py .
+RUN pip install .
+
+# No need to install requirements again as they're already installed
+# ----- Model specific placeholders -----
+# ----- Model specific placeholders end -----
+
+ENTRYPOINT ["python3", "/llserver/llserver/models/openvla/server.py"]
+

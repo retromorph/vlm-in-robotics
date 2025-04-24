@@ -6,8 +6,6 @@
 
 ```git submodule update --init --recursive simpler_env```
 
-```git submodule update --init --recursive simpler_env_vla```
-
 ### Download dependencies:
 
 ```conda env create -f environment.yml```
@@ -17,7 +15,7 @@ then use [hack](https://github.com/simpler-env/SimplerEnv/issues/26) to fully in
 ```
 conda activate vlm-in-robotics
 pip install tensorflow==2.15.0 # Update me
-pip install -r simpler_env/requirements_full_install.txt
+pip install -r simpler_env_vla/requirements_full_install.txt
 pip install tensorflow[and-cuda]==2.15.1 # Update me
 conda install ffmpeg
 ```
@@ -70,3 +68,5 @@ cd llserver
 PYTHONPATH=$PYTHONPATH:. uvicorn llserver.server.uniserver:app --reload --host 0.0.0.0 --port 8000
 
 docker build -t llmserver.cogact llserver/models/cogact
+
+conda install pytorch torchvision torchaudio pytorch-cuda=12.4 cuda-toolkit=12.4 -c pytorch -c nvidia -y  # UPDATE ME!

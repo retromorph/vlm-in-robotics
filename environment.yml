@@ -12,5 +12,3 @@ dependencies:
     - numpy==1.24.4
     - -e ./simpler_env/ManiSkill2_real2sim
     - -e ./simpler_env
-    - -r llserver/dev_requirements.txt
-    - -e ./llserver
