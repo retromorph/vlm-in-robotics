@@ -58,3 +58,23 @@ services:
         reservations:
           devices:
             - capabilities: [gpu]
+
+#  spatialvla:
+#    build:
+#      context: ./models/spatialvla
+#      dockerfile: Dockerfile
+#    image: spatialvla:latest
+#    container_name: spatialvla
+#    environment:
+#      - HF_HOME=/cache/huggingface
+#    ports:
+#      - "8004:8000"
+#    restart: unless-stopped
+#    volumes:
+#      - ./models/cogact:/app
+#      - /cache/huggingface:/cache/huggingface
+#    deploy:                           # swarm/k8s hints, ignored by plain compose
+#      resources:
+#        reservations:
+#          devices:
+#            - capabilities: [gpu]
