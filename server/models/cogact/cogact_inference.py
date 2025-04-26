@@ -29,7 +29,7 @@ class CogACTInference:
         image_size: list[int] = [224, 224],
         future_action_window_size: int = 15,
         action_dim: int = 7,
-        action_model_type: str = "DiT-L",
+        action_model_type: str = "DiT-B",
         action_scale: float = 1.0,
         cfg_scale: float = 1.5,
         use_ddim: bool = True,
@@ -68,7 +68,7 @@ class CogACTInference:
         self.vla = load_vla(
           saved_model_path,                       # choose from ['CogACT/CogACT-Small', 'CogACT/CogACT-Base', 'CogACT/CogACT-Large'] or the local path
           hf_token="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",
-          load_for_training=False, 
+          load_for_training=False,
           action_model_type=action_model_type,              # choose from ['DiT-Small', 'DiT-Base', 'DiT-Large'] to match the model weight
           future_action_window_size=future_action_window_size,
           action_dim=action_dim,
@@ -137,10 +137,10 @@ class CogACTInference:
         assert image.dtype == np.uint8
         self._add_image_to_history(self._resize_image(image))
         image: Image.Image = Image.fromarray(image)
-        raw_actions, normalized_actions = self.vla.predict_action(image=image, 
+        raw_actions, normalized_actions = self.vla.predict_action(image=image,
                                                                 instruction=self.task_description,
                                                                 unnorm_key=self.unnorm_key,
-                                                                do_sample=False, 
+                                                                do_sample=False,
                                                                 cfg_scale=self.cfg_scale,
                                                                 use_ddim=self.use_ddim,
                                                                 num_ddim_steps=self.num_ddim_steps,
@@ -193,7 +193,7 @@ class CogACTInference:
 
         elif self.policy_setup == "widowx_bridge":
             action["gripper"] = 2.0 * (raw_action["open_gripper"] > 0.5) - 1.0
-        
+
         action["terminate_episode"] = np.array([0.0])
         return raw_action, action
 
@@ -232,5 +232,3 @@ class CogACTInference:
         axs["image"].set_xlabel("Time in one episode (subsampled)")
         plt.legend()
         plt.savefig(save_path)
-
-inference = CogACTInference(policy_setup='google_robot')

@@ -2,9 +2,10 @@
 
 ## Installation
 
-### Initialize SimplerEnv:
+### Initialize submodules:
 
 ```git submodule update --init --recursive simpler_env```
+```git submodule update --init --recursive simpler_env_openvla```
 
 ### Download dependencies:
 
@@ -20,30 +21,7 @@ pip install tensorflow[and-cuda]==2.15.1 # Update me
 conda install ffmpeg
 ```
 
-## Updating
-
-### Update SimplerEnv:
-
-```git submodule update --remote --recursive simpler_env```
-
-### Update dependencies:
-
-```conda env update --file environment.yml --prune```
-
-then use [hack](https://github.com/simpler-env/SimplerEnv/issues/26) to fully update SimplerEnv:
-
-```
-conda activate vlm-in-robotics
-pip install tensorflow==2.15.0 # Update me
-pip install -r simpler_env/requirements_full_install.txt
-pip install tensorflow[and-cuda]==2.15.1 # Update me
-conda install ffmpeg
-```
-
 ## Modules
-
-### [Llserver](https://github.com/AmpiroMax/llserver)
-API gateway for LLMs
 
 ### SimplerEnv
 
@@ -63,10 +41,13 @@ python simpler_env/simple_inference_visual_matching_prepackaged_envs.py --policy
 
 Result will be in results_simple_eval
 
-## ...
-cd llserver
-PYTHONPATH=$PYTHONPATH:. uvicorn llserver.server.uniserver:app --reload --host 0.0.0.0 --port 8000
+## Server
 
-docker build -t llmserver.cogact llserver/models/cogact
+```angular2html
+cd server
+docker compose up -d # Select only desired models in docker-compose.yml
+```
 
-conda install pytorch torchvision torchaudio pytorch-cuda=12.4 cuda-toolkit=12.4 -c pytorch -c nvidia -y  # UPDATE ME!
+# Notebooks
+
+To run openvla_experiments and spatialvla_experiments you need to install simpler_env_openvla instead of common simpler_end
